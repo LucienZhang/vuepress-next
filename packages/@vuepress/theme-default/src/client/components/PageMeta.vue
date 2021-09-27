@@ -9,6 +9,11 @@
       <span class="meta-item-info">{{ lastUpdated }}</span>
     </div>
 
+    <div class="meta-item">
+      <span class="meta-item-label">created: </span>
+      <span class="meta-item-info">{{ created }}</span>
+    </div>
+
     <div
       v-if="contributors && contributors.length"
       class="meta-item contributors"
@@ -103,6 +108,19 @@ const useLastUpdated = (): ComputedRef<null | string> => {
   })
 }
 
+const useCreated = (): ComputedRef<null | string> => {
+  const siteLocale = useSiteLocaleData()
+  const page = usePageData<DefaultThemePageData>()
+
+  return computed(() => {
+    if (!page.value.git?.createdTime) return null
+
+    const createdDate = new Date(page.value.git?.createdTime)
+
+    return createdDate.toLocaleString(siteLocale.value.lang)
+  })
+}
+
 const useContributors = (): ComputedRef<
   null | Required<DefaultThemePageData['git']>['contributors']
 > => {
@@ -123,5 +141,6 @@ const useContributors = (): ComputedRef<
 const themeLocale = useThemeLocaleData()
 const editNavLink = useEditNavLink()
 const lastUpdated = useLastUpdated()
+const created = useCreated()
 const contributors = useContributors()
 </script>
