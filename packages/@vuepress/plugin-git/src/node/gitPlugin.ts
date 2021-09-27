@@ -1,4 +1,5 @@
 import type { Plugin } from '@vuepress/core'
+import { path } from '@vuepress/utils'
 import type { GitData } from './types'
 import {
   checkGitRepo,
@@ -39,21 +40,30 @@ export const gitPlugin: Plugin<GitPluginOptions> = (
 
     extendsPageData: async (page) => {
       const git: GitData = {}
+      const gitInclude: string[] =
+        (page.frontmatter.gitInclude as string[]) ?? []
 
       if (!isGitRepoValid || page.filePathRelative === null) {
         return { git }
       }
 
+      const dirOfCurrentPage = path.dirname(page.filePathRelative)
+
+      const filePaths: string[] = [
+        page.filePathRelative,
+        ...gitInclude.map((item) => path.join(dirOfCurrentPage, item)),
+      ]
+
       if (createdTime !== false) {
-        git.createdTime = await getCreatedTime(page.filePathRelative, cwd)
+        git.createdTime = await getCreatedTime(filePaths, cwd)
       }
 
       if (updatedTime !== false) {
-        git.updatedTime = await getUpdatedTime(page.filePathRelative, cwd)
+        git.updatedTime = await getUpdatedTime(filePaths, cwd)
       }
 
       if (contributors !== false) {
-        git.contributors = await getContributors(page.filePathRelative, cwd)
+        git.contributors = await getContributors(filePaths, cwd)
       }
 
       return { git }
